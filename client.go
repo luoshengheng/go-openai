@@ -2,6 +2,7 @@ package openai
 
 import (
 	"bufio"
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -210,7 +211,13 @@ func (c *Client) fullURL(suffix string, args ...any) string {
 
 func (c *Client) handleErrorResp(resp *http.Response) error {
 	var errRes ErrorResponse
-	err := json.NewDecoder(resp.Body).Decode(&errRes)
+	errMsg := ""
+	buf := new(bytes.Buffer)
+	_, err := buf.ReadFrom(resp.Body)
+	if err == nil {
+		errMsg = buf.String()
+	}
+	err = json.NewDecoder(resp.Body).Decode(&errRes)
 	if err != nil || errRes.Error == nil {
 		reqErr := &RequestError{
 			HTTPStatusCode: resp.StatusCode,
@@ -218,6 +225,8 @@ func (c *Client) handleErrorResp(resp *http.Response) error {
 		}
 		if errRes.Error != nil {
 			reqErr.Err = errRes.Error
+		} else {
+			return fmt.Errorf("%s", errMsg)
 		}
 		return reqErr
 	}
