@@ -154,6 +154,7 @@ func (c *Client) setCommonHeaders(req *http.Request) {
 	if c.config.OrgID != "" {
 		req.Header.Set("OpenAI-Organization", c.config.OrgID)
 	}
+	req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)")
 }
 
 func isFailureStatusCode(resp *http.Response) bool {
