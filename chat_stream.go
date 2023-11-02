@@ -2,7 +2,6 @@ package openai
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 )
 
@@ -53,7 +52,6 @@ func (c *Client) CreateChatCompletionStream(
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println(req.Header, req.Header.Get("User-Agent"))
 	resp, err := sendRequestStream[ChatCompletionStreamResponse](c, req)
 	if err != nil {
 		return

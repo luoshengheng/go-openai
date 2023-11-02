@@ -1,6 +1,7 @@
 package openai
 
 import (
+	"crypto/tls"
 	"net/http"
 	"regexp"
 )
@@ -38,13 +39,22 @@ type ClientConfig struct {
 }
 
 func DefaultConfig(authToken string) ClientConfig {
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+	}
+
+	// Create a new client with the transport
+	client := &http.Client{
+		Transport: tr,
+	}
+
 	return ClientConfig{
 		authToken: authToken,
 		BaseURL:   openaiAPIURLv1,
 		APIType:   APITypeOpenAI,
 		OrgID:     "",
 
-		HTTPClient: &http.Client{},
+		HTTPClient: client,
 
 		EmptyMessagesLimit: defaultEmptyMessagesLimit,
 	}
