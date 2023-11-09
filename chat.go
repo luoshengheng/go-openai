@@ -89,6 +89,7 @@ type ChatCompletionRequest struct {
 	Functions     []FunctionDefinition `json:"functions,omitempty"`
 	FunctionCall  any                  `json:"function_call,omitempty"`
 	AllowFallback bool                 `json:"allow_fallback,omitempty"`
+	CaptchaToken  string               `json:"captchaToken,omitempty"` //easychat的额外参数
 }
 
 type FunctionDefinition struct {
@@ -149,6 +150,7 @@ type ChatCompletionResponse struct {
 func (c *Client) CreateChatCompletion(
 	ctx context.Context,
 	request ChatCompletionRequest,
+	extraHeaders ...map[string]string,
 ) (response ChatCompletionResponse, err error) {
 	if request.Stream {
 		err = ErrChatCompletionStreamNotSupported
@@ -162,6 +164,17 @@ func (c *Client) CreateChatCompletion(
 	}
 
 	req, err := c.newRequest(ctx, http.MethodPost, c.fullURL(urlSuffix, request.Model), withBody(request))
+	if len(extraHeaders) > 0 && extraHeaders[0] != nil {
+		for _, headers := range extraHeaders {
+			if headers == nil {
+				continue
+			}
+			for k, v := range headers {
+				req.Header.Set(k, v)
+			}
+		}
+
+	}
 	if err != nil {
 		return
 	}
