@@ -120,7 +120,7 @@ func (c *Client) sendRequestRaw(req *http.Request) (body io.ReadCloser, err erro
 	return resp.Body, nil
 }
 
-func sendRequestStream[T streamable](client *Client, req *http.Request) (*streamReader[T], error) {
+func sendRequestStream[T Streamable](client *Client, req *http.Request) (*StreamReader[T], error) {
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Accept", "text/event-stream")
 	req.Header.Set("Cache-Control", "no-cache")
@@ -128,17 +128,17 @@ func sendRequestStream[T streamable](client *Client, req *http.Request) (*stream
 
 	resp, err := client.config.HTTPClient.Do(req) //nolint:bodyclose // body is closed in stream.Close()
 	if err != nil {
-		return new(streamReader[T]), err
+		return new(StreamReader[T]), err
 	}
 	if isFailureStatusCode(resp) {
-		return new(streamReader[T]), client.handleErrorResp(resp)
+		return new(StreamReader[T]), client.handleErrorResp(resp)
 	}
-	return &streamReader[T]{
-		emptyMessagesLimit: client.config.EmptyMessagesLimit,
-		reader:             bufio.NewReader(resp.Body),
-		response:           resp,
-		errAccumulator:     utils.NewErrorAccumulator(),
-		unmarshaler:        &utils.JSONUnmarshaler{},
+	return &StreamReader[T]{
+		EmptyMessagesLimit: client.config.EmptyMessagesLimit,
+		Reader:             bufio.NewReader(resp.Body),
+		Response:           resp,
+		ErrAccumulator:     utils.NewErrorAccumulator(),
+		Unmarshaler:        &utils.JSONUnmarshaler{},
 	}, nil
 }
 

@@ -30,7 +30,7 @@ type ChatCompletionStreamResponse struct {
 // ChatCompletionStream
 // Note: Perhaps it is more elegant to abstract Stream using generics.
 type ChatCompletionStream struct {
-	*streamReader[ChatCompletionStreamResponse]
+	*StreamReader[ChatCompletionStreamResponse]
 }
 
 // CreateChatCompletionStream — API call to create a chat completion w/ streaming
@@ -73,7 +73,7 @@ func (c *Client) CreateChatCompletionStream(
 		return
 	}
 	stream = &ChatCompletionStream{
-		streamReader: resp,
+		StreamReader: resp,
 	}
 	return
 }

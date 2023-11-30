@@ -10,7 +10,7 @@ var (
 )
 
 type CompletionStream struct {
-	*streamReader[CompletionResponse]
+	*StreamReader[CompletionResponse]
 }
 
 // CreateCompletionStream — API call to create a completion w/ streaming
@@ -43,7 +43,7 @@ func (c *Client) CreateCompletionStream(
 		return
 	}
 	stream = &CompletionStream{
-		streamReader: resp,
+		StreamReader: resp,
 	}
 	return
 }
