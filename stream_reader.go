@@ -74,7 +74,6 @@ func (stream *StreamReader[T]) processLines() (T, error) {
 			if unmarshalErr != nil {
 				return *new(T), unmarshalErr
 			}
-			totalBytes = []byte{}
 			return t, nil
 
 		}
