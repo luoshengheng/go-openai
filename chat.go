@@ -159,6 +159,10 @@ func (c *Client) CreateChatCompletion(
 	}
 
 	urlSuffix := chatCompletionsSuffix
+	if len(extraHeaders) > 0 && extraHeaders[0] != nil && extraHeaders[0]["path"] != "" {
+		urlSuffix = extraHeaders[0]["path"]
+
+	}
 	if !checkEndpointSupportsModel(urlSuffix, request.Model) {
 		err = ErrChatCompletionInvalidModel
 		return

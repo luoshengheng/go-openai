@@ -3,6 +3,7 @@ package openai
 import (
 	"bufio"
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -44,14 +45,29 @@ func (stream *streamReader[T]) processLines() (T, error) {
 	var (
 		emptyMessagesCount uint
 		hasErrorPrefix     bool
+		messagesText       string
 	)
 
 	for {
 		rawLine, readErr := stream.reader.ReadBytes('\n')
+		messagesText += string(rawLine)
 		if readErr != nil || hasErrorPrefix {
 			respErr := stream.unmarshalError()
 			if respErr != nil {
 				return *new(T), fmt.Errorf("error, %w", respErr.Error)
+			}
+			if len(messagesText) > 0 {
+				var response ChatCompletionStreamResponse
+				response.Choices = []ChatCompletionStreamChoice{{Index: 0, Delta: ChatCompletionStreamChoiceDelta{Content: messagesText}, FinishReason: "Completed"}}
+				bytes, _ := json.Marshal(response)
+
+				var t T
+				unmarshalErr := stream.unmarshaler.Unmarshal(bytes, &t)
+				if unmarshalErr != nil {
+					return *new(T), unmarshalErr
+				}
+				messagesText = ""
+				return t, nil
 			}
 			return *new(T), readErr
 		}
@@ -87,7 +103,7 @@ func (stream *streamReader[T]) processLines() (T, error) {
 		if unmarshalErr != nil {
 			return *new(T), unmarshalErr
 		}
-
+		messagesText = ""
 		return response, nil
 	}
 }
