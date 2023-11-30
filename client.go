@@ -120,6 +120,10 @@ func (c *Client) sendRequestRaw(req *http.Request) (body io.ReadCloser, err erro
 	return resp.Body, nil
 }
 
+type JSONUnmarshaler = utils.JSONUnmarshaler
+type ErrorAccumulator = utils.ErrorAccumulator
+type DefaultErrorAccumulator = utils.DefaultErrorAccumulator
+
 func sendRequestStream[T Streamable](client *Client, req *http.Request) (*StreamReader[T], error) {
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Accept", "text/event-stream")
