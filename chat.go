@@ -91,6 +91,7 @@ type ChatCompletionRequest struct {
 	AllowFallback bool                 `json:"allow_fallback,omitempty"`
 	CaptchaToken  string               `json:"captchaToken,omitempty"` //easychat的额外参数
 	Token         string               `json:"token,omitempty"`        //ylokh的额外参数
+	PlainText     bool                 `json:"plainText,omitempty"`    //用于标识响应的内容是否纯文本
 }
 
 type FunctionDefinition struct {

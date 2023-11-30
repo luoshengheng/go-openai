@@ -66,7 +66,7 @@ func (stream *StreamReader[T]) processLines() (T, error) {
 			}
 
 			var response ChatCompletionStreamResponse
-			response.Choices = []ChatCompletionStreamChoice{{Index: 0, Delta: ChatCompletionStreamChoiceDelta{Content: string(totalBytes)}, FinishReason: "Completed"}}
+			response.Choices = []ChatCompletionStreamChoice{{Index: 0, Delta: ChatCompletionStreamChoiceDelta{Content: string(totalBytes)}, FinishReason: "PlainText"}}
 			bytes, _ := json.Marshal(response)
 
 			var t T
