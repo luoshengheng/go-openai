@@ -1,6 +1,7 @@
 package openai
 
 import (
+	"bufio"
 	"context"
 	"errors"
 	"net/http"
@@ -84,14 +85,14 @@ type ChatCompletionRequest struct {
 	// LogitBias is must be a token id string (specified by their token ID in the tokenizer), not a word string.
 	// incorrect: `"logit_bias":{"You": 6}`, correct: `"logit_bias":{"1639": 6}`
 	// refs: https://platform.openai.com/docs/api-reference/chat/create#chat/create-logit_bias
-	LogitBias     map[string]int       `json:"logit_bias,omitempty"`
-	User          string               `json:"user,omitempty"`
-	Functions     []FunctionDefinition `json:"functions,omitempty"`
-	FunctionCall  any                  `json:"function_call,omitempty"`
-	AllowFallback bool                 `json:"allow_fallback,omitempty"`
-	CaptchaToken  string               `json:"captchaToken,omitempty"` //easychat的额外参数
-	Token         string               `json:"token,omitempty"`        //ylokh的额外参数
-	PlainText     bool                 `json:"-"`                      //用于标识响应的内容是否纯文本
+	LogitBias        map[string]int                                  `json:"logit_bias,omitempty"`
+	User             string                                          `json:"user,omitempty"`
+	Functions        []FunctionDefinition                            `json:"functions,omitempty"`
+	FunctionCall     any                                             `json:"function_call,omitempty"`
+	AllowFallback    bool                                            `json:"allow_fallback,omitempty"`
+	CaptchaToken     string                                          `json:"captchaToken,omitempty"` //easychat的额外参数
+	Token            string                                          `json:"token,omitempty"`        //ylokh的额外参数
+	ContentProcessor func(*bufio.Reader) (content string, err error) `json:"-"`                      //非标准化响应结果的处理函数
 }
 
 type FunctionDefinition struct {

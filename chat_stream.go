@@ -71,9 +71,7 @@ func (c *Client) CreateChatCompletionStream(
 	if err != nil {
 		return
 	}
-	if request.PlainText {
-		resp.ResponsePlainText = true
-	}
+	resp.ContentProcessor = request.ContentProcessor
 	stream = &ChatCompletionStream{
 		StreamReader: resp,
 	}

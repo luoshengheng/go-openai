@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"unicode/utf8"
 
 	utils "github.com/sashabaranov/go-openai/internal"
 )
@@ -24,7 +23,7 @@ type Streamable interface {
 type StreamReader[T Streamable] struct {
 	EmptyMessagesLimit uint
 	IsFinished         bool
-	ResponsePlainText  bool
+	ContentProcessor   func(*bufio.Reader) (content string, err error)
 	Reader             *bufio.Reader
 	Response           *http.Response
 	ErrAccumulator     utils.ErrorAccumulator
@@ -47,26 +46,15 @@ func (stream *StreamReader[T]) processLines() (T, error) {
 		emptyMessagesCount uint
 		hasErrorPrefix     bool
 	)
-	if stream.ResponsePlainText {
-		totalBytes := []byte{}
+	if stream.ContentProcessor != nil {
 		for {
-			respBytes := make([]byte, 1)
-			_, readErr := stream.Reader.Read(respBytes)
-			if readErr != nil {
-				respErr := stream.unmarshalError()
-				if respErr != nil {
-					return *new(T), fmt.Errorf("error, %w", respErr.Error)
-				}
-				return *new(T), readErr
-			}
-			totalBytes = append(totalBytes, respBytes...)
-			r, _ := utf8.DecodeRune(totalBytes)
-			if r == utf8.RuneError {
-				continue
+			conent, err := stream.ContentProcessor(stream.Reader)
+			if err != nil {
+				return *new(T), err
 			}
 
 			var response ChatCompletionStreamResponse
-			response.Choices = []ChatCompletionStreamChoice{{Index: 0, Delta: ChatCompletionStreamChoiceDelta{Content: string(totalBytes)}, FinishReason: "PlainText"}}
+			response.Choices = []ChatCompletionStreamChoice{{Index: 0, Delta: ChatCompletionStreamChoiceDelta{Content: conent}, FinishReason: "ContentProcessor"}}
 			bytes, _ := json.Marshal(response)
 
 			var t T
@@ -75,7 +63,6 @@ func (stream *StreamReader[T]) processLines() (T, error) {
 				return *new(T), unmarshalErr
 			}
 			return t, nil
-
 		}
 	} else {
 		for {
